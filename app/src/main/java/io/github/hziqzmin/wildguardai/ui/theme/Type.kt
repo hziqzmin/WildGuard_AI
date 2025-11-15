@@ -17,21 +17,21 @@ val MontserratFontFamily = FontFamily(
 
 val Typography = Typography(
     bodyLarge = TextStyle(
-        fontFamily = MontserratFontFamily, // Use your custom font from Font.kt
+        fontFamily = MontserratFontFamily, // Use your custom font
         fontWeight = FontWeight.Normal,
         fontSize = 16.sp,
         lineHeight = 24.sp,
         letterSpacing = 0.5.sp
     ),
     titleLarge = TextStyle(
-        fontFamily = MontserratFontFamily, // Use your custom font from Font.kt
+        fontFamily = MontserratFontFamily, // Use your custom font
         fontWeight = FontWeight.Bold,
         fontSize = 22.sp,
         lineHeight = 28.sp,
         letterSpacing = 0.sp
     ),
     labelMedium = TextStyle(
-        fontFamily = MontserratFontFamily, // Use your custom font from Font.kt
+        fontFamily = MontserratFontFamily, // Use your custom font
         fontWeight = FontWeight.Medium,
         fontSize = 12.sp,
         lineHeight = 16.sp,

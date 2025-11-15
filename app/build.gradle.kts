@@ -11,7 +11,7 @@ android {
     defaultConfig {
         applicationId = "io.github.hziqzmin.wildguardai"
         minSdk = 26
-        targetSdk = 34
+        targetSdk = 35
         versionCode = 1
         versionName = "1.0"
 
@@ -37,6 +37,26 @@ android {
     buildFeatures {
         compose = true
     }
+
+    androidResources {
+        noCompress += listOf("tflite", "bin", "json", "onnx")
+    }
+
+    // TensorFlow Lite (TFLite) and ONNX Runtime (ORT).
+    packaging {
+        jniLibs {
+            pickFirsts.add("lib/arm64-v8a/libc++_shared.so")
+            pickFirsts.add("lib/armeabi-v7a/libc++_shared.so")
+            pickFirsts.add("lib/x86/libc++_shared.so")
+            pickFirsts.add("lib/x86_64/libc++_shared.so")
+        }
+
+        resources {
+            excludes.add("/META-INF/{AL2.0,LGPL2.1}")
+            excludes.add("META-INF/LICENSE.md")
+            excludes.add("META-INF/NOTICE.txt")
+        }
+    }
 }
 
 dependencies {
@@ -51,6 +71,13 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
     implementation(libs.androidx.material.icons.extended)
+    implementation(libs.androidx.navigation.compose)
+    implementation(libs.tensorflow.lite)
+    implementation(libs.tensorflow.lite.support)
+    implementation(libs.mediapipe.genai)
+    implementation(libs.gson)
+    implementation(libs.kotlinx.coroutines.android)
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
