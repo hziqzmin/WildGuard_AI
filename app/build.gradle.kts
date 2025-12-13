@@ -75,6 +75,8 @@ dependencies {
     implementation(libs.tensorflow.lite)
     implementation(libs.tensorflow.lite.support)
     implementation(libs.mediapipe.genai)
+    implementation(libs.tasks.text)
+    implementation(libs.onnxruntime.android)
     implementation(libs.gson)
     implementation(libs.kotlinx.coroutines.android)
 

@@ -5,6 +5,8 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels // Import for by viewModels()
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,25 +17,48 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.Book
 import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Chat
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material.icons.filled.Search // <-- ADDED for FAB
+import androidx.compose.material.icons.filled.Settings // <-- ADDED for Profile
+import androidx.compose.material.icons.filled.AttachMoney // <-- ADDED for Profile
 import androidx.compose.material3.*
+import io.github.hziqzmin.wildguardai.ui.theme.DarkGreen
+import io.github.hziqzmin.wildguardai.ui.theme.Cream
+import io.github.hziqzmin.wildguardai.ui.theme.AccentTurquoise
+import io.github.hziqzmin.wildguardai.ui.theme.White
+import io.github.hziqzmin.wildguardai.ui.theme.Black
+
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen // Import for installSplashScreen
+import io.github.hziqzmin.wildguardai.ui.screens.GuideScreen
+import io.github.hziqzmin.wildguardai.ui.screens.MapScreen
+import io.github.hziqzmin.wildguardai.ui.screens.SosScreen
+import io.github.hziqzmin.wildguardai.ui.screens.ChatScreen
+// REMOVED these imports, as we define the screens in this file
+// import io.github.hziqzmin.wildguardai.ui.screens.ChatScreen
+// import io.github.hziqzmin.wildguardai.ui.screens.ProfileScreen
 import io.github.hziqzmin.wildguardai.ui.theme.WildGuardAITheme
 import kotlinx.coroutines.launch
 
@@ -64,7 +89,6 @@ class MainActivity : ComponentActivity() {
                 ) {
                     // Only show the main app UI *after* loading is complete
                     if (!isLoading) {
-                        // --- EDIT 1: Pass the viewModel in ---
                         WildGuardApp(viewModel = viewModel)
                     }
                 }
@@ -73,42 +97,62 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-// --- NEW COMPOSABLE FOR YOUR ENTIRE APP UI ---
+// --- UPDATED COMPOSABLE FOR YOUR ENTIRE APP UI ---
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun WildGuardApp(viewModel: MainViewModel) { // --- EDIT 2: Accept the viewModel ---
-    // 1. State for managing which tab is selected. 2 is "Search" (Chat) by default.
+fun WildGuardApp(viewModel: MainViewModel) {
+    // 1. State for managing which tab is selected. 4 = Profile (to match image)
     var selectedItemIndex by remember { mutableStateOf(2) }
 
-    // 2. Scaffold provides the layout structure (top bar, bottom bar, content)
+    // List of items for the bottom bar.
+    // NOTE: Using Search icon (index 2) from your image
+    val items = listOf(
+        BottomNavItem("Guides", Icons.Default.Book),
+        BottomNavItem("Map", Icons.Default.Map),
+        BottomNavItem("AI", Icons.Default.Chat),
+        BottomNavItem("SOS", Icons.Default.Warning),
+        BottomNavItem("Profile", Icons.Default.Person)
+    )
+
     Scaffold(
+        modifier = Modifier.fillMaxSize(),
+        // 1. Set the main background color for the content area
+        containerColor = Cream,
+
+        // 2. Use CenterAlignedTopAppBar
         topBar = {
-            TopAppBar(
-                title = { Text("WildGuard AI") },
+            CenterAlignedTopAppBar(
+                title = { Text("WildGuard AI", color = White) },
                 navigationIcon = {
                     IconButton(onClick = { /* TODO: Open navigation drawer */ }) {
                         Icon(
                             imageVector = Icons.Default.Menu,
-                            contentDescription = "Menu"
+                            contentDescription = "Menu",
+                            tint = White // Make icon white
                         )
                     }
-                }
+                },
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                    containerColor = DarkGreen // Set background color
+                )
             )
         },
-        bottomBar = {
-            NavigationBar {
-                // List of items for the bottom bar
-                val items = listOf(
-                    BottomNavItem("Guides", Icons.Default.Book),
-                    BottomNavItem("Map", Icons.Default.Map),
-                    BottomNavItem("Chat", Icons.Default.Search),
-                    BottomNavItem("SOS", Icons.Default.Warning),
-                    BottomNavItem("Profile", Icons.Default.Person)
-                )
 
+        // 5. Use BottomAppBar with a cutout for the FAB
+        bottomBar = {
+            NavigationBar(
+                containerColor = Cream, // Light background for the bar
+                contentColor = DarkGreen
+            ) {
                 items.forEachIndexed { index, item ->
+                    val isSelected = selectedItemIndex == index
+                    val isAiButton = index == 2
+
+                    // The "Search" button will be AccentTurquoise when not selected
+                    val unselectedColor = if (isAiButton) AccentTurquoise else Color.Gray
+
                     NavigationBarItem(
-                        selected = selectedItemIndex == index,
+                        selected = isSelected,
                         onClick = { selectedItemIndex = index },
                         label = { Text(item.label) },
                         icon = {
@@ -116,30 +160,37 @@ fun WildGuardApp(viewModel: MainViewModel) { // --- EDIT 2: Accept the viewModel
                                 imageVector = item.icon,
                                 contentDescription = item.label
                             )
-                        }
+                        },
+                        colors = NavigationBarItemDefaults.colors(
+                            selectedIconColor = DarkGreen,
+                            selectedTextColor = DarkGreen,
+                            unselectedIconColor = unselectedColor,
+                            unselectedTextColor = unselectedColor,
+                            indicatorColor = AccentTurquoise.copy(alpha = 0.2f) // Use a subtle indicator
+                        )
                     )
                 }
             }
         }
     ) { innerPadding ->
-        // 3. This is the main content area of your app.
-        //    It shows a different screen based on which tab is selected.
+        // 6. Main content area
         Box(modifier = Modifier.padding(innerPadding)) {
             when (selectedItemIndex) {
-                0 -> PlaceholderScreen("Guides Screen")
-                1 -> PlaceholderScreen("Map Screen")
-                2 -> ChatScreen(viewModel = viewModel) // --- EDIT 3: Pass the viewModel in ---
-                3 -> PlaceholderScreen("SOS Screen")
-                4 -> PlaceholderScreen("Profile Screen")
+                0 -> GuideScreen()
+                1 -> MapScreen()
+                2 -> ChatScreen(viewModel = viewModel)
+                3 -> SosScreen()
+                4 -> ProfileScreen()
             }
         }
     }
 }
 
+
 // Data class to hold info for bottom navigation items
 data class BottomNavItem(val label: String, val icon: androidx.compose.ui.graphics.vector.ImageVector)
 
-// --- REPLACED COMPOSABLE FOR YOUR CHAT SCREEN CONTENT ---
+// --- YOUR CHAT SCREEN CONTENT (from your file) ---
 @Composable
 fun ChatScreen(viewModel: MainViewModel) {
     // 1. Observe the list of messages from the ViewModel
@@ -221,7 +272,7 @@ fun ChatScreen(viewModel: MainViewModel) {
     }
 }
 
-// A simple composable to display a single chat bubble
+// A simple composable to display a single chat bubble (from your file)
 @Composable
 fun ChatMessageItem(message: ChatMessage) {
     Row(
@@ -245,7 +296,107 @@ fun ChatMessageItem(message: ChatMessage) {
     }
 }
 
-// --- GENERIC PLACEHOLDER SCREEN ---
+// --- NEW PROFILE SCREEN COMPOSABLE (to match your image) ---
+@Composable
+fun ProfileScreen() {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            // The content background is Cream
+            .background(Cream)
+    ) {
+        // --- Top Dark Section ---
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(DarkGreen) // This blends with the TopAppBar
+                .padding(vertical = 24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            // Profile Icon
+            Icon(
+                imageVector = Icons.Default.Person,
+                contentDescription = "Profile Picture",
+                modifier = Modifier
+                    .size(80.dp)
+                    .clip(CircleShape)
+                    .background(Black)
+                    .padding(12.dp),
+                tint = DarkGreen
+            )
+
+            // Username
+            Text(
+                text = "hziqzmin",
+                color = White,
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold
+            )
+
+            // Premium Status
+            Text(
+                text = "Premium",
+                color = AccentTurquoise, // Using the custom gold-like color
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Medium
+            )
+        }
+
+        // --- Divider ---
+        // This divider is inside the DarkGreen section in your image
+        Divider(color = White.copy(alpha = 0.5f), thickness = 1.dp)
+
+        // --- Light-Background List Items ---
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            ProfileListItem(
+                text = "Upgrade Plan",
+                icon = Icons.Default.AttachMoney
+            )
+            ProfileListItem(
+                text = "Personalize",
+                icon = Icons.Default.Person
+            )
+            ProfileListItem(
+                text = "Settings",
+                icon = Icons.Default.Settings
+            )
+        }
+    }
+}
+
+// Helper composable for the list items
+@Composable
+fun ProfileListItem(text: String, icon: androidx.compose.ui.graphics.vector.ImageVector) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { /* TODO: Handle click */ }
+            .padding(vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = text,
+            tint = Black
+        )
+        Text(
+            text = text,
+            color = Black,
+            fontSize = 16.sp,
+            fontWeight = FontWeight.Medium
+        )
+    }
+}
+
+
+// --- GENERIC PLACEHOLDER SCREEN (from your file) ---
 @Composable
 fun PlaceholderScreen(screenName: String) {
     Box(
@@ -261,7 +412,7 @@ fun PlaceholderScreen(screenName: String) {
 fun WildGuardAppPreview() {
     WildGuardAITheme {
         // You can't preview the full app with a ViewModel easily.
-        // Instead, preview the placeholder screen.
-        PlaceholderScreen("Chat Screen Preview")
+        // Instead, let's preview the new Profile Screen!
+        ProfileScreen()
     }
 }
