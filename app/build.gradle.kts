@@ -6,12 +6,12 @@ plugins {
 
 android {
     namespace = "io.github.hziqzmin.wildguardai"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "io.github.hziqzmin.wildguardai"
-        minSdk = 34
-        targetSdk = 34
+        minSdk = 26
+        targetSdk = 35
         versionCode = 1
         versionName = "1.0"
 
@@ -37,18 +37,49 @@ android {
     buildFeatures {
         compose = true
     }
+
+    androidResources {
+        noCompress += listOf("tflite", "bin", "json", "onnx")
+    }
+
+    // TensorFlow Lite (TFLite) and ONNX Runtime (ORT).
+    packaging {
+        jniLibs {
+            pickFirsts.add("lib/arm64-v8a/libc++_shared.so")
+            pickFirsts.add("lib/armeabi-v7a/libc++_shared.so")
+            pickFirsts.add("lib/x86/libc++_shared.so")
+            pickFirsts.add("lib/x86_64/libc++_shared.so")
+        }
+
+        resources {
+            excludes.add("/META-INF/{AL2.0,LGPL2.1}")
+            excludes.add("META-INF/LICENSE.md")
+            excludes.add("META-INF/NOTICE.txt")
+        }
+    }
 }
 
 dependencies {
-
+    implementation(libs.androidx.core.splashscreen)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
     implementation(platform(libs.androidx.compose.bom))
+    implementation(libs.androidx.lifecycle.viewmodel.ktx) // Add this line for ViewModel
     implementation(libs.androidx.ui)
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+    implementation(libs.androidx.material.icons.extended)
+    implementation(libs.androidx.navigation.compose)
+    implementation(libs.tensorflow.lite)
+    implementation(libs.tensorflow.lite.support)
+    implementation(libs.mediapipe.genai)
+    implementation(libs.tasks.text)
+    implementation(libs.onnxruntime.android)
+    implementation(libs.gson)
+    implementation(libs.kotlinx.coroutines.android)
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
